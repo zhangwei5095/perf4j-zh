@@ -10,11 +10,12 @@
 #
 # 如果你的开发平台是window，需要手动执行以下步骤
 #   1. git clone https://github.com/WangJunTYTL/peaceful-basic-platform.git
-#   2. 进入peaceful-basic-platform 目录 ，执行 mvn install  -Dmaven.test.skip=true
-#   5. 进入perf4j-zh目录，执行 mvn install  -Dmaven.test.skip=true
+#   2. 进入peaceful-basic-platform 目录 ，先执行 mvn install f peaceful-parent/pom.xml -Dmaven.test.skip=true 然后在执行 mvn install  -Dmaven.test.skip=true
+#   3. 进入perf4j-zh目录，执行 mvn install  -Dmaven.test.skip=true
+#   4. 进入apm-dashboard目录 执行 mvn jetty:run 启动dashboard项目
+#   5. 进入perf4j-demo目录, 执行 mvn jetty:run 启动演示项目
+#   6. 不断访问演示项目地址:http://127.0.0.1:8888/demo,使其产生请求量,查看dashboard项目查看监控数据
 #==================================
-
-source /etc/profile
 ENV=$1
 [ "x${ENV}" == "x" ] && ENV='dev' # dev test product
 echo '----------------------------------------------'
@@ -28,7 +29,7 @@ cmd_is_exist(){
     if [ $? == 0 ];then
         echo "OK"
     else
-        echo "请先安装$1，并添加$1到PATH变量中" && exit 1
+        echo "请先安装$1，并添加$1到PATH变量中" && eit 1
     fi
 }
 
@@ -38,23 +39,30 @@ cmd_is_exist "git"
 echo '----------------------------------------------'
 
 wait
-echo "准备下载依赖包并开始构建 ..."
-
-#下载依赖包，最好手动将依赖包install到你的本地仓库
+echo "准备下载依赖包并开始构建...初次构建需要下载依赖包~~这可能需要点时间~~等会再回来吧"
+sleep 2
+#下载依赖包，最好手动将依赖包install到你的本
 echo "下载依赖包peaceful-basic-platform"
 [ -d "peaceful-basic-platform" ] && rm -rf peaceful-basic-platform
 git clone https://github.com/WangJunTYTL/peaceful-basic-platform.git ||  exit 1
 cd peaceful-basic-platform
-mvn clean -P${ENV} -f peaceful-parent/pom.xml install  -Dmaven.test.skip=true || exit 1
+sh build.sh || exit 1
+cd ..
+
+echo "下载依赖包redismanage"
+[ -d "redismanage" ]   && rm -rf redismanage
+git clone https://github.com/WangJunTYTL/redismanage.git || exit 1
+cd redismanage
 mvn clean -P${ENV} install  -Dmaven.test.skip=true || exit 1
 cd ..
 
 wait
 rm -rf peaceful-basic-platform
+rm -rf redismanage
 
 mvn -P${ENV} clean install  -Dmaven.test.skip=true || exit 1
 echo '-------------------------------------------------------------------------------'
-echo "恭喜你!构建成功,接下来你可以运行样例项目perf4j-demo和perf4j-dashboard进行测试..."
+echo "恭喜你~~构建成功！"
 echo '-------------------------------------------------------------------------------'
 
 
